@@ -26,6 +26,7 @@ export const FlexibleSection = ({
   return (
     <div
       id={id}
+      data-section-id={id}
       style={responsiveStyles}
       className={cn(
         "flex",

@@ -81,6 +81,7 @@ export const FlexibleComponent = ({
       return (
         <div
           id={id}
+          data-component-id={id}
           style={responsiveStyles}
           className={cn(
             "text-base",
@@ -98,6 +99,7 @@ export const FlexibleComponent = ({
       return (
         <img
           id={id}
+          data-component-id={id}
           src={(properties as ImageProperties).src}
           alt={(properties as ImageProperties).alt || ""}
           style={responsiveStyles}
@@ -109,6 +111,7 @@ export const FlexibleComponent = ({
       return (
         <button
           id={id}
+          data-component-id={id}
           style={responsiveStyles}
           className={cn(
             "px-4 py-2 bg-blue-500 text-white rounded font-medium hover:bg-blue-600 transition-colors",
@@ -143,6 +146,7 @@ export const FlexibleComponent = ({
         <>
           <input
             id={id}
+            data-component-id={id}
             type={(properties as InputProperties).input_type || "text"}
             placeholder={(properties as InputProperties).placeholder || ""}
             required={(properties as InputProperties).required || false}
@@ -182,6 +186,7 @@ export const FlexibleComponent = ({
       return (
         <button
           id={id}
+          data-component-id={id}
           style={responsiveStyles}
           className={cn(
             "secondary-font w-full text-center font-medium hover:opacity-90 transition-opacity active:scale-95 relative",
@@ -206,6 +211,7 @@ export const FlexibleComponent = ({
       return (
         <div
           id={id}
+          data-component-id={id}
           style={responsiveStyles}
           className="bg-gray-50 p-4 border border-gray-200 rounded text-center"
         >
@@ -222,25 +228,27 @@ export const FlexibleComponent = ({
       return (
         <hr
           id={id}
+          data-component-id={id}
           style={responsiveStyles}
           className="my-4 border-t border-gray-200"
         />
       );
 
     case "spacer":
-      return <div id={id} style={responsiveStyles} className="h-6" />;
+      return <div id={id} data-component-id={id} style={responsiveStyles} className="h-6" />;
 
     case "custom":
       // Handle custom components
       return (
         <div
           id={id}
+          data-component-id={id}
           style={responsiveStyles}
           dangerouslySetInnerHTML={{ __html: (properties as any).html }}
         />
       );
 
     default:
-      return <div>Unknown component type: {type}</div>;
+      return <div data-component-id={id}>Unknown component type: {type}</div>;
   }
 };

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { ChevronLeft, ChevronRight, FileText, Send, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Send, RotateCcw, MousePointer } from "lucide-react";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -11,6 +11,9 @@ interface CollapsibleChatPaneProps {
   className?: string;
   jsonPath?: string;
   onJsonUpdate?: (newJsonData: any) => void;
+  onInspectorToggle?: (isActive: boolean) => void;
+  selectedComponentPath?: string;
+  onComponentSelect?: (path: string | null) => void;
 }
 
 export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
@@ -18,11 +21,15 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
   className = "",
   jsonPath = "data/sample-flexible-content.json",
   onJsonUpdate,
+  onInspectorToggle,
+  selectedComponentPath,
+  onComponentSelect,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInspectorActive, setIsInspectorActive] = useState(false);
 
   // Load conversation from localStorage on component mount
   useEffect(() => {
@@ -41,7 +48,7 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  const callPopupCreatorAPI = useCallback(async (conversationHistory: Message[], currentJson: any) => {
+  const callPopupCreatorAPI = useCallback(async (conversationHistory: Message[], currentJson: any, componentPath: string | null) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
     const response = await fetch(`${baseUrl}/v1/popup-creator/shortest-hacks`, {
       method: 'POST',
@@ -51,6 +58,7 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
       body: JSON.stringify({
         current_json: currentJson,
         messages: conversationHistory,
+        selected_component_path: componentPath,
       }),
     });
 
@@ -75,7 +83,7 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
 
     try {
       // Call API
-      const response = await callPopupCreatorAPI(updatedMessages, jsonData);
+      const response = await callPopupCreatorAPI(updatedMessages, jsonData, selectedComponentPath || null);
       
       // Add assistant response to conversation
       const assistantMessage: Message = { 
@@ -103,12 +111,22 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [chatInput, messages, isLoading, callPopupCreatorAPI, onJsonUpdate, jsonData]);
+  }, [chatInput, messages, isLoading, callPopupCreatorAPI, onJsonUpdate, jsonData, selectedComponentPath]);
 
   const handleReset = useCallback(() => {
     setMessages([]);
     localStorage.removeItem('popup-creator-conversation');
   }, []);
+
+  const handleInspectorToggle = useCallback(() => {
+    const newState = !isInspectorActive;
+    setIsInspectorActive(newState);
+    onInspectorToggle?.(newState);
+    if (!newState) {
+      // If turning off inspector, clear any selection
+      onComponentSelect?.(null);
+    }
+  }, [isInspectorActive, onInspectorToggle, onComponentSelect]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -119,6 +137,7 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
 
   return (
     <div
+      data-chat-pane
       className={`bg-white border-l border-gray-200 transition-all duration-300 flex flex-col ${
         isExpanded ? "w-80" : "w-12"
       } ${className}`}
@@ -150,6 +169,33 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
             <div className="bg-gray-50 p-3 rounded-md">
               <code className="text-xs text-gray-700 break-all">{jsonPath}</code>
             </div>
+          </div>
+
+          {/* Inspector Section */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MousePointer size={16} className="text-gray-600" />
+                <h3 className="text-sm font-medium text-gray-900">Inspector</h3>
+              </div>
+              <button
+                onClick={handleInspectorToggle}
+                className={`flex items-center gap-2 px-3 py-1.5 text-xs rounded-md transition-colors ${
+                  isInspectorActive
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                }`}
+              >
+                <MousePointer size={12} />
+                {isInspectorActive ? 'Active' : 'Inactive'}
+              </button>
+            </div>
+            {selectedComponentPath && (
+              <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                <div className="text-xs font-medium text-blue-900 mb-1">Selected:</div>
+                <code className="text-xs text-blue-700">{selectedComponentPath}</code>
+              </div>
+            )}
           </div>
 
           {/* Chat Section */}

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { DeviceToggle, DeviceView } from "./device-toggle";
 import { CollapsibleChatPane } from "./collapsible-chat-pane";
+import { InspectorOverlay } from "./inspector-overlay";
 import FlexiblePopup from "../flexible-popup";
 import { FlexibleContent, Breakpoint } from "../ui";
 import { OptinFlowNode } from "../types/popup";
@@ -20,6 +21,9 @@ export const FlexibleContentRenderer: React.FC<FlexibleContentRendererProps> = (
 }) => {
   const [deviceView, setDeviceView] = useState<DeviceView>("desktop");
   const [flexibleContent, setFlexibleContent] = useState<FlexibleContent>(initialFlexibleContent);
+  const [isInspectorActive, setIsInspectorActive] = useState(false);
+  const [selectedComponentPath, setSelectedComponentPath] = useState<string | null>(null);
+  const [hoveredComponentPath, setHoveredComponentPath] = useState<string | null>(null);
 
   // Convert device view to breakpoint override
   const overrideBreakpoint: Breakpoint | undefined =
@@ -42,6 +46,19 @@ export const FlexibleContentRenderer: React.FC<FlexibleContentRendererProps> = (
     setFlexibleContent(newJsonData);
   };
 
+  // Inspector handlers
+  const handleInspectorToggle = (isActive: boolean) => {
+    setIsInspectorActive(isActive);
+    if (!isActive) {
+      setSelectedComponentPath(null);
+      setHoveredComponentPath(null);
+    }
+  };
+
+  const handleComponentSelect = (path: string | null) => {
+    setSelectedComponentPath(path);
+  };
+
   return (
     <div className={`h-screen flex flex-col bg-gray-50 ${className}`}>
       {/* Header */}
@@ -58,15 +75,16 @@ export const FlexibleContentRenderer: React.FC<FlexibleContentRendererProps> = (
       {/* Main Content */}
       <div className="flex-1 flex">
         {/* Preview Area */}
-        <div className="flex-1 py-[12px] px-[6px] h-full">
+        <div className="flex-1 py-[12px] px-[6px] h-full relative">
           <div
+            data-preview-area
             className={`bg-white rounded-lg mx-auto transition-all duration-300 ease-in-out ${
               deviceView === "mobile"
                 ? "w-[390px] h-full"
                 : "w-[calc(100%-48px)] h-[calc(100vh-96px)]"
             }`}
           >
-            <div className="h-full w-full">
+            <div className="h-full w-full relative">
               <FlexiblePopup
                 node={mockNode}
                 isOpen={true}
@@ -88,8 +106,18 @@ export const FlexibleContentRenderer: React.FC<FlexibleContentRendererProps> = (
         <CollapsibleChatPane 
           jsonData={flexibleContent} 
           onJsonUpdate={handleJsonUpdate}
+          onInspectorToggle={handleInspectorToggle}
+          selectedComponentPath={selectedComponentPath}
+          onComponentSelect={handleComponentSelect}
         />
       </div>
+
+      {/* Inspector Overlay */}
+      <InspectorOverlay
+        isActive={isInspectorActive}
+        onComponentSelect={handleComponentSelect}
+        selectedComponentPath={selectedComponentPath}
+      />
     </div>
   );
 };
