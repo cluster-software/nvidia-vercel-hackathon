@@ -8,7 +8,7 @@ const HomePage: React.FC = () => {
     <div className="App">
       <FlexibleContentRenderer
         flexibleContent={sampleFlexibleContent as FlexibleContent}
-        title="Flexible Content Renderer Demo"
+        title="v0 for Popups Demo"
       />
     </div>
   );

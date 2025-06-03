@@ -14,11 +14,12 @@ interface FlexibleContentRendererProps {
 }
 
 export const FlexibleContentRenderer: React.FC<FlexibleContentRendererProps> = ({
-  flexibleContent,
+  flexibleContent: initialFlexibleContent,
   title = "Flexible Content Preview",
   className = "",
 }) => {
   const [deviceView, setDeviceView] = useState<DeviceView>("desktop");
+  const [flexibleContent, setFlexibleContent] = useState<FlexibleContent>(initialFlexibleContent);
 
   // Convert device view to breakpoint override
   const overrideBreakpoint: Breakpoint | undefined =
@@ -35,6 +36,11 @@ export const FlexibleContentRenderer: React.FC<FlexibleContentRendererProps> = (
   // No-op handlers for preview mode
   const noOpSubmit = () => {};
   const noOpClose = () => {};
+
+  // Handler for JSON updates from chat
+  const handleJsonUpdate = (newJsonData: any) => {
+    setFlexibleContent(newJsonData);
+  };
 
   return (
     <div className={`h-screen flex flex-col bg-gray-50 ${className}`}>
@@ -79,7 +85,10 @@ export const FlexibleContentRenderer: React.FC<FlexibleContentRendererProps> = (
         </div>
 
         {/* Collapsible Chat Pane */}
-        <CollapsibleChatPane jsonData={flexibleContent} />
+        <CollapsibleChatPane 
+          jsonData={flexibleContent} 
+          onJsonUpdate={handleJsonUpdate}
+        />
       </div>
     </div>
   );
