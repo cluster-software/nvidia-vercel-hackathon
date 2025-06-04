@@ -50,7 +50,7 @@ export const CollapsibleChatPane: React.FC<CollapsibleChatPaneProps> = ({
 
   const callPopupCreatorAPI = useCallback(async (conversationHistory: Message[], currentJson: any, componentPath: string | null) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    const response = await fetch(`${baseUrl}/v1/popup-creator/shortest-hacks`, {
+    const response = await fetch(`${baseUrl}/modify-ui`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
